@@ -1,5 +1,7 @@
+const capabilities = require("./capabilities");
 const Ecocloud = require("../../ecovacs/Ecocloud");
 const entities = require("../../entities");
+const LinuxWifiScanCapability = require("../common/linuxCapabilities/LinuxWifiScanCapability");
 const Logger = require("../../Logger");
 const Tools = require("../../utils/Tools");
 const ValetudoRobot = require("../../core/ValetudoRobot");
@@ -32,6 +34,19 @@ class EcovacsX1OmniValetudoRobot extends ValetudoRobot {
             onConnected: () => {},
             onIncomingCloudMessage: () => true,
         });
+
+        // this.registerCapability(new capabilities.MockWifiConfigurationCapability({robot: this}));
+        this.registerCapability(new capabilities.EcovacsWifiConfigurationCapability({
+            robot: this,
+            networkInterface: "wlan0"
+        }));
+
+        if (this.config.get("embedded") === true) {
+            this.registerCapability(new LinuxWifiScanCapability({
+                robot: this,
+                networkInterface: "wlan0"
+            }));
+        }
 
         // this.registerCapability(new capabilities.MockBasicControlCapability({robot: this}));
         // this.registerCapability(new capabilities.MockCarpetModeControlCapability({robot: this}));
