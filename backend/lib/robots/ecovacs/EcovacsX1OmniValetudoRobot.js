@@ -31,8 +31,10 @@ class EcovacsX1OmniValetudoRobot extends ValetudoRobot {
             resourceId: this.resourceId,
             bindIP: this.ecovacsBindIp,
             bindPort: this.ecovacsBindPort,
-            onConnected: () => {},
-            onIncomingCloudMessage: () => true,
+            onConnected: async () => {
+                // TODO
+            },
+            onIncomingCloudMessage: this.onIncomingCloudMessage,
         });
 
         // this.registerCapability(new capabilities.MockWifiConfigurationCapability({robot: this}));
@@ -94,12 +96,47 @@ class EcovacsX1OmniValetudoRobot extends ValetudoRobot {
         // }));
     }
 
-    // TODO
-    // use mdsctl mid
+    async pollState() {
+        const data = await this.ecocloud.send(Ecocloud.MESSAGE_TYPES.P2P, 'getInfo', ['getStationState', 'getBattery', 'getChargeState', 'getStats'])
+
+        this.parseAndUpdateState(data)
+
+        return this.state;
+    }
+
+    parseAndUpdateState(data) {
+        if (data.body.data.getBattery && data.body.data.getChargeState) {
+            /** @type {import("../../entities/state/attributes/BatteryStateAttribute").BatteryStateAttributeFlag} */
+            let flag = stateAttrs.BatteryStateAttribute.FLAG.NONE;
+
+            const level = data.body.data.getBattery.data.value;
+            if (data.body.data.getChargeState.data.isCharging === 1) {
+                if (level === 100) {
+                    flag = stateAttrs.BatteryStateAttribute.FLAG.CHARGED;
+                } else {
+                    flag = stateAttrs.BatteryStateAttribute.FLAG.CHARGING;
+                }
+            } else {
+                flag = stateAttrs.BatteryStateAttribute.FLAG.DISCHARGING;
+            }
+            this.state.upsertFirstMatchingAttribute(new stateAttrs.BatteryStateAttribute({
+                level,
+                flag,
+            }));
+        }
+    }
+
+    onIncomingCloudMessage(msg) {
+        // console.log('got packet here', msg)
+        return true;
+    }
+
     static IMPLEMENTATION_AUTO_DETECTION_HANDLER() {
         return true;
     }
 
+    // TODO
+    // use mdsctl mid
     // TODO stubbed
     get deviceId() {
         return this.implConfig.deviceId;
