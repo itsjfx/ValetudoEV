@@ -97,9 +97,9 @@ class EcovacsX1OmniValetudoRobot extends ValetudoRobot {
     }
 
     async pollState() {
-        const data = await this.ecocloud.send(Ecocloud.MESSAGE_TYPES.P2P, 'getInfo', ['getStationState', 'getBattery', 'getChargeState', 'getStats'])
+        const data = await this.ecocloud.send(Ecocloud.MESSAGE_TYPES.P2P, "getInfo", ["getStationState", "getBattery", "getChargeState", "getStats"]);
 
-        this.parseAndUpdateState(data)
+        this.parseAndUpdateState(data);
 
         return this.state;
     }
@@ -120,8 +120,8 @@ class EcovacsX1OmniValetudoRobot extends ValetudoRobot {
                 flag = stateAttrs.BatteryStateAttribute.FLAG.DISCHARGING;
             }
             this.state.upsertFirstMatchingAttribute(new stateAttrs.BatteryStateAttribute({
-                level,
-                flag,
+                level: level,
+                flag: flag,
             }));
         }
     }

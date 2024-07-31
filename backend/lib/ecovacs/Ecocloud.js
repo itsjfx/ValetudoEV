@@ -1,8 +1,8 @@
+const EcocloudTimeoutError = require("./EcocloudTimeoutError");
 const fs = require("fs");
 const Logger = require("../Logger");
 const path = require("path");
 const { createBroker } = require("aedes");
-const EcocloudTimeoutError = require("./EcocloudTimeoutError");
 
 class Ecocloud {
     /**
@@ -71,15 +71,15 @@ class Ecocloud {
                 return;
             }
 
-            const topic = packet.topic.split('/');
-            const [iot, topic_type, cmd] = topic;
-            if (iot != 'iot') {
+            const topic = packet.topic.split("/");
+            const [iot, topic_type] = topic;
+            if (iot !== "iot") {
                 // not implemented
                 return;
             }
 
             try {
-                packet.payload = JSON.parse(packet.payload.toString('utf8'))
+                packet.payload = JSON.parse(packet.payload.toString("utf8"));
             } catch { /* intentional */ }
 
             // TODO do this better. detect a handshake
@@ -103,20 +103,20 @@ class Ecocloud {
                 clearTimeout(request.timeoutId);
                 request.resolve(packet.payload);
             } else {
-                Logger.debug('unhandled topic type', topic_type);
+                Logger.debug("unhandled topic type", topic_type);
                 return;
             }
 
             // TODO
             // handle default messages if any, then throw to robot
-            this.onIncomingCloudMessage(packet)
+            this.onIncomingCloudMessage(packet);
         });
     }
 
     // cloud sends a 4 character alphanumeric request id
     // TOOD semaphore?
     generateMessageId() {
-        let messageId = '';
+        let messageId = "";
         do {
             for (let i = 0; i < REQUEST_ID_LEN; i++) {
                 messageId += REQUEST_ID_CHARS.charAt(Math.floor(Math.random() * REQUEST_ID_CHARS.length));
@@ -142,23 +142,23 @@ class Ecocloud {
                     pri: 2,
                     ts: Date.now(),
                     tzm: 600,
-                    ver: '0.0.22',
+                    ver: "0.0.22",
                 },
             };
             if (body) {
-                msg['body'] = { data: body };
+                msg["body"] = { data: body };
             }
             const msgId = this.generateMessageId();
             this.pendingP2PRequests[msgId] = {
-                resolve,
-                reject,
+                resolve: resolve,
+                reject: reject,
                 onTimeout: () => {
                     Logger.debug(`request ${msgId} timed out`);
                     delete this.pendingP2PRequests[msgId];
                     reject(new EcocloudTimeoutError(cmd, msg));
                 },
                 timeout: null,
-            }
+            };
             // iot/p2p/getMajorMap/HelperMQClientId-awsna-sts-ngiot-mqsjmq-0/ecosys/1234/x/x/x/q/H5sW/j
             // the temptation is high to name HelperMqClientId... an arbitrary name
             // but a firmware upgrade could check for it
@@ -167,22 +167,22 @@ class Ecocloud {
                 topic: `iot/p2p/${cmd}/HelperMQClientId-awsna-sts-ngiot-mqsjmq-0/ecosys/1234/${this.deviceId}/${this.mId}/${this.resourceId}/q/${msgId}/j`,
                 payload: JSON.stringify(msg),
             })
-            .catch(reject)
+                .catch(reject);
 
-            this.pendingP2PRequests[msgId].timeoutId = setTimeout(() => this.pendingP2PRequests[msgId].onTimeout(), 500)
-        })
+            this.pendingP2PRequests[msgId].timeoutId = setTimeout(() => this.pendingP2PRequests[msgId].onTimeout(), 500);
+        });
     }
 
     /**
-    * @param {EcocloudMessageTypes} type
-    * @param {string} cmd
-    * @param {object} body
-    */
+     * @param {EcocloudMessageTypes} type
+     * @param {string} cmd
+     * @param {object} body
+     */
     async send(type, cmd, body) {
         if (type === Ecocloud.MESSAGE_TYPES.P2P) {
             return this.sendP2P(cmd, body);
         } else {
-            Logger.debug(`Unhandled message type: ${type}`)
+            Logger.debug(`Unhandled message type: ${type}`);
             throw new Error(`Invalid message type: ${type}`);
         }
     }
@@ -242,7 +242,7 @@ Ecocloud.MESSAGE_TYPES = Object.freeze({
     ATR: "atr",
 });
 
-const REQUEST_ID_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const REQUEST_ID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 const REQUEST_ID_LEN = 4;
 
 module.exports = Ecocloud;
