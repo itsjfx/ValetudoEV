@@ -3,6 +3,8 @@
     <p align="center"><h2>Free your vacuum from the cloud</h2></p>
 </div>
 
+# **See [ValetudoEV](./ValetudoEV.md) for ValetudoEV / Ecovacs info**
+
 Valetudo is a cloud replacement for vacuum robots enabling local-only operation. It is not a custom firmware.<br/>
 Here's a diagram illustrating the core operation principle:
 
