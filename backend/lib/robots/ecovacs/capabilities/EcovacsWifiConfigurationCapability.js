@@ -30,7 +30,7 @@ class EcovacsWifiConfigurationCapability extends LinuxWifiConfigurationCapabilit
                 "u": "xxxxxxxxxxxxxxxx", // user id
                 "sc": "xx", // unknown
                 "lb": "127.0.0.1", // typically jmq-ngiot-REGION.area.ww.ecouser.net -- TODO use config here
-                "i": "{\"a\":\"au\",\"dc\":\"na\",\"r\":\"127.0.0.1\",\"v\":\"ww\"}" // used?
+                "i": { "a": "au", "dc": "na", "r": "127.0.0.1", "v": "ww" }, // not sure if this is used
             });
 
             const options = {
