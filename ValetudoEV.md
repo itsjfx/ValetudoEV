@@ -18,6 +18,12 @@ something. Did I mention you shouldn't use this?
 This will probably only work on an Ecovacs X1 Omni as this is the **only**
 "supported" hardware. Supported = maybe it won't crash.
 
+Note that "supported" also implies **aarch64**. Other Ecovacs Linux models are
+not interchangeable: the T9/DLX13 line alone ships as aarch64 (PX30, `1.x`
+firmware) and **32-bit armv7l** (RV1126, `2.x` firmware), so an `aarch64` build
+simply will not execute there. `backend/package.json` already has `build_armv7`
+and `build_armv7_lowmem` targets if you want to experiment on 32-bit hardware.
+
 If you're lucky it'll do what it says it will do in the "what does it do?"
 section very badly.
 
@@ -92,10 +98,19 @@ openssl req -x509 -key server.key -out server.crt -days 6969
 ```
 4. Run Valetudo in one of two modes
    * Embedded
-       1. Build `valetudo` via `npm run build_aarch64 --workspace=backend`
+       1. Build `valetudo` for the robot's architecture
+          (`npm run build_aarch64 --workspace=backend` for aarch64,
+          `npm run build_armv7 --workspace=backend` or `build_armv7_lowmem`
+          for 32-bit armv7l)
        2. Copy the built binary to your robot and run it
        3. I got this `autostart` script which lives in
           `/data/autostart/valetudo.sh`, which is enabled via my custom firmware
+
+          (If you are doing this on a model you haven't patched yourself: some
+          Ecovacs images ship `/etc/rc.conf` with `!autostart.sh`, and
+          `/etc/rc.sysinit` skips any daemon entry beginning with `!`, so the
+          hook silently does nothing. Check with
+          `grep -o '.\{0,1\}autostart.sh' /etc/rc.conf`.)
 ```bash
 #!/bin/sh
 
